@@ -3001,3 +3001,41 @@ textarea:focus {
   }
 
 }
+
+/* =========================================
+   MOBILE SIDEBAR FIX
+   Sidebar is CLOSED when mobile page loads
+========================================= */
+
+@media (max-width: 768px) {
+
+  /* Main page always uses full width */
+  .sidebar-visible .main-content,
+  .sidebar-hidden .main-content {
+    margin-left: 0;
+  }
+
+  /* Sidebar hidden by default */
+  .sidebar-hidden .sidebar {
+    transform: translateX(-100%);
+  }
+
+  /* Sidebar opens when menu button is clicked */
+  .sidebar-visible .sidebar {
+    transform: translateX(0);
+  }
+
+}
+
+
+/* =========================================
+   MOBILE SIDEBAR OVERLAY
+========================================= */
+
+@media (max-width: 768px) {
+
+  .sidebar-overlay {
+    display: block;
+  }
+
+}

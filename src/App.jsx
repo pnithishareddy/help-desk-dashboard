@@ -18,11 +18,20 @@ import initialTickets from "./data/initialTickets.jsx";
 
 function App() {
 
+  /* =========================================
+     TICKETS
+  ========================================= */
+
   const [tickets, setTickets] = useState([]);
 
   const [loading, setLoading] = useState(true);
 
   const [error, setError] = useState("");
+
+
+  /* =========================================
+     PAGE / TICKET STATE
+  ========================================= */
 
   const [activePage, setActivePage] =
     useState("Dashboard");
@@ -39,14 +48,81 @@ function App() {
   const [deleteTicket, setDeleteTicket] =
     useState(null);
 
+
+  /* =========================================
+     TOAST
+  ========================================= */
+
   const [toast, setToast] = useState({
     message: "",
     type: "success"
   });
 
-  const [sidebarOpen, setSidebarOpen] =
-    useState(true);
 
+  /* =========================================
+     SIDEBAR
+
+     IMPORTANT:
+     Desktop  = open by default
+     Mobile   = closed by default
+  ========================================= */
+
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+
+    if (typeof window !== "undefined") {
+      return window.innerWidth > 768;
+    }
+
+    return true;
+
+  });
+
+
+  /* =========================================
+     RESPONSIVE SIDEBAR
+
+     If screen changes from desktop to mobile,
+     close the sidebar automatically.
+  ========================================= */
+
+  useEffect(() => {
+
+    const handleResize = () => {
+
+      if (window.innerWidth <= 768) {
+
+        setSidebarOpen(false);
+
+      } else {
+
+        setSidebarOpen(true);
+
+      }
+
+    };
+
+
+    window.addEventListener(
+      "resize",
+      handleResize
+    );
+
+
+    return () => {
+
+      window.removeEventListener(
+        "resize",
+        handleResize
+      );
+
+    };
+
+  }, []);
+
+
+  /* =========================================
+     LOAD TICKETS
+  ========================================= */
 
   useEffect(() => {
 
@@ -56,6 +132,7 @@ function App() {
         localStorage.getItem(
           "helpdesk_tickets"
         );
+
 
       if (savedTickets) {
 
@@ -85,13 +162,19 @@ function App() {
     } finally {
 
       setTimeout(() => {
+
         setLoading(false);
+
       }, 500);
 
     }
 
   }, []);
 
+
+  /* =========================================
+     SAVE TICKETS
+  ========================================= */
 
   useEffect(() => {
 
@@ -107,11 +190,16 @@ function App() {
   }, [tickets, loading]);
 
 
+  /* =========================================
+     TOAST TIMER
+  ========================================= */
+
   useEffect(() => {
 
     if (!toast.message) {
       return;
     }
+
 
     const timer = setTimeout(() => {
 
@@ -122,11 +210,16 @@ function App() {
 
     }, 3000);
 
+
     return () =>
       clearTimeout(timer);
 
   }, [toast]);
 
+
+  /* =========================================
+     SHOW TOAST
+  ========================================= */
 
   const showToast = (
     message,
@@ -141,6 +234,10 @@ function App() {
   };
 
 
+  /* =========================================
+     CREATE TICKET
+  ========================================= */
+
   const handleCreateTicket = (
     ticketData
   ) => {
@@ -154,8 +251,10 @@ function App() {
           ) + 1
         : 1001;
 
+
     const now =
       new Date().toLocaleString();
+
 
     const newTicket = {
 
@@ -183,14 +282,19 @@ function App() {
       comments: [],
 
       activities: [
+
         {
           id: Date.now(),
+
           text: "Ticket created",
+
           date: now
         }
+
       ]
 
     };
+
 
     setTickets(
       (previous) => [
@@ -198,6 +302,7 @@ function App() {
         ...previous
       ]
     );
+
 
     setShowForm(false);
 
@@ -207,6 +312,7 @@ function App() {
 
     setSidebarOpen(false);
 
+
     showToast(
       `Ticket #${newId} created successfully.`
     );
@@ -214,12 +320,17 @@ function App() {
   };
 
 
+  /* =========================================
+     UPDATE TICKET
+  ========================================= */
+
   const handleUpdateTicket = (
     ticketData
   ) => {
 
     const now =
       new Date().toLocaleString();
+
 
     setTickets(
       (previous) =>
@@ -230,8 +341,11 @@ function App() {
               ticket.id !==
               editingTicket.id
             ) {
+
               return ticket;
+
             }
+
 
             return {
 
@@ -244,10 +358,14 @@ function App() {
                 ...ticket.activities,
 
                 {
+
                   id: Date.now(),
+
                   text:
                     "Ticket information updated",
+
                   date: now
+
                 }
 
               ]
@@ -255,14 +373,20 @@ function App() {
             };
 
           }
+
         )
+
     );
+
 
     setEditingTicket(null);
 
     setShowForm(false);
 
     setActivePage("Tickets");
+
+    setSidebarOpen(false);
+
 
     showToast(
       "Ticket updated successfully."
@@ -271,11 +395,16 @@ function App() {
   };
 
 
+  /* =========================================
+     DELETE TICKET
+  ========================================= */
+
   const handleDeleteTicket = () => {
 
     if (!deleteTicket) {
       return;
     }
+
 
     setTickets(
       (previous) =>
@@ -286,7 +415,9 @@ function App() {
         )
     );
 
+
     setDeleteTicket(null);
+
 
     showToast(
       `Ticket #${deleteTicket.id} deleted.`,
@@ -296,6 +427,10 @@ function App() {
   };
 
 
+  /* =========================================
+     STATUS CHANGE
+  ========================================= */
+
   const handleStatusChange = (
     ticketId,
     newStatus
@@ -303,6 +438,7 @@ function App() {
 
     const now =
       new Date().toLocaleString();
+
 
     setTickets(
       (previous) =>
@@ -312,8 +448,11 @@ function App() {
             if (
               ticket.id !== ticketId
             ) {
+
               return ticket;
+
             }
+
 
             return {
 
@@ -326,10 +465,14 @@ function App() {
                 ...ticket.activities,
 
                 {
+
                   id: Date.now(),
+
                   text:
                     `Status changed to ${newStatus}`,
+
                   date: now
+
                 }
 
               ]
@@ -337,7 +480,9 @@ function App() {
             };
 
           }
+
         )
+
     );
 
 
@@ -347,6 +492,7 @@ function App() {
         if (!previous) {
           return previous;
         }
+
 
         return {
 
@@ -359,10 +505,14 @@ function App() {
             ...previous.activities,
 
             {
+
               id: Date.now(),
+
               text:
                 `Status changed to ${newStatus}`,
+
               date: now
+
             }
 
           ]
@@ -370,6 +520,7 @@ function App() {
         };
 
       }
+
     );
 
 
@@ -380,6 +531,10 @@ function App() {
   };
 
 
+  /* =========================================
+     ASSIGNEE CHANGE
+  ========================================= */
+
   const handleAssigneeChange = (
     ticketId,
     newAssignee
@@ -387,6 +542,7 @@ function App() {
 
     const now =
       new Date().toLocaleString();
+
 
     setTickets(
       (previous) =>
@@ -396,8 +552,11 @@ function App() {
             if (
               ticket.id !== ticketId
             ) {
+
               return ticket;
+
             }
+
 
             return {
 
@@ -410,10 +569,14 @@ function App() {
                 ...ticket.activities,
 
                 {
+
                   id: Date.now(),
+
                   text:
                     `Ticket assigned to ${newAssignee}`,
+
                   date: now
+
                 }
 
               ]
@@ -421,7 +584,9 @@ function App() {
             };
 
           }
+
         )
+
     );
 
 
@@ -431,6 +596,7 @@ function App() {
         if (!previous) {
           return previous;
         }
+
 
         return {
 
@@ -443,10 +609,14 @@ function App() {
             ...previous.activities,
 
             {
+
               id: Date.now(),
+
               text:
                 `Ticket assigned to ${newAssignee}`,
+
               date: now
+
             }
 
           ]
@@ -454,6 +624,7 @@ function App() {
         };
 
       }
+
     );
 
 
@@ -464,6 +635,10 @@ function App() {
   };
 
 
+  /* =========================================
+     ADD COMMENT
+  ========================================= */
+
   const handleAddComment = (
     ticketId,
     text
@@ -471,6 +646,7 @@ function App() {
 
     const now =
       new Date().toLocaleString();
+
 
     const newComment = {
 
@@ -493,16 +669,22 @@ function App() {
             if (
               ticket.id !== ticketId
             ) {
+
               return ticket;
+
             }
+
 
             return {
 
               ...ticket,
 
               comments: [
+
                 ...ticket.comments,
+
                 newComment
+
               ],
 
               activities: [
@@ -510,10 +692,14 @@ function App() {
                 ...ticket.activities,
 
                 {
+
                   id: Date.now() + 1,
+
                   text:
                     "New comment added",
+
                   date: now
+
                 }
 
               ]
@@ -521,7 +707,9 @@ function App() {
             };
 
           }
+
         )
+
     );
 
 
@@ -532,13 +720,17 @@ function App() {
           return previous;
         }
 
+
         return {
 
           ...previous,
 
           comments: [
+
             ...previous.comments,
+
             newComment
+
           ],
 
           activities: [
@@ -546,10 +738,14 @@ function App() {
             ...previous.activities,
 
             {
+
               id: Date.now() + 1,
+
               text:
                 "New comment added",
+
               date: now
+
             }
 
           ]
@@ -557,6 +753,7 @@ function App() {
         };
 
       }
+
     );
 
 
@@ -566,6 +763,10 @@ function App() {
 
   };
 
+
+  /* =========================================
+     CREATE FORM
+  ========================================= */
 
   const openCreateForm = () => {
 
@@ -579,6 +780,10 @@ function App() {
 
   };
 
+
+  /* =========================================
+     EDIT FORM
+  ========================================= */
 
   const openEditForm = (
     ticket
@@ -595,6 +800,10 @@ function App() {
   };
 
 
+  /* =========================================
+     TICKET DETAILS
+  ========================================= */
+
   const openTicketDetails = (
     ticket
   ) => {
@@ -608,12 +817,20 @@ function App() {
   };
 
 
+  /* =========================================
+     CLOSE TICKET DETAILS
+  ========================================= */
+
   const closeDetails = () => {
 
     setSelectedTicket(null);
 
   };
 
+
+  /* =========================================
+     PAGE CHANGE
+  ========================================= */
 
   const handlePageChange = (
     page
@@ -627,10 +844,18 @@ function App() {
 
     setEditingTicket(null);
 
+    /*
+      This makes sure the sidebar closes
+      after selecting a page on mobile.
+    */
     setSidebarOpen(false);
 
   };
 
+
+  /* =========================================
+     CONTACT ADMIN
+  ========================================= */
 
   const handleContactAdmin = () => {
 
@@ -648,6 +873,10 @@ function App() {
 
   };
 
+
+  /* =========================================
+     LOADING
+  ========================================= */
 
   if (loading) {
 
@@ -667,6 +896,10 @@ function App() {
 
   }
 
+
+  /* =========================================
+     ERROR
+  ========================================= */
 
   if (error) {
 
@@ -702,6 +935,10 @@ function App() {
   }
 
 
+  /* =========================================
+     MAIN APPLICATION
+  ========================================= */
+
   return (
 
     <div
@@ -712,15 +949,25 @@ function App() {
       }`}
     >
 
+      {/* =====================================
+          NAVBAR
+      ===================================== */}
+
       <Navbar
+
         onMenuClick={() =>
           setSidebarOpen(
             (previous) =>
               !previous
           )
         }
+
       />
 
+
+      {/* =====================================
+          SIDEBAR
+      ===================================== */}
 
       <Sidebar
 
@@ -743,7 +990,16 @@ function App() {
       />
 
 
+      {/* =====================================
+          MAIN CONTENT
+      ===================================== */}
+
       <main className="main-content">
+
+
+        {/* ===================================
+            TICKET FORM
+        =================================== */}
 
         {showForm ? (
 
@@ -768,6 +1024,11 @@ function App() {
           />
 
         ) : selectedTicket ? (
+
+
+          /* =================================
+             TICKET DETAILS
+          ================================= */
 
           <TicketDetails
 
@@ -804,6 +1065,11 @@ function App() {
         ) : activePage ===
           "Dashboard" ? (
 
+
+          /* =================================
+             DASHBOARD
+          ================================= */
+
           <Dashboard
 
             tickets={tickets}
@@ -816,6 +1082,11 @@ function App() {
 
         ) : activePage ===
           "Tickets" ? (
+
+
+          /* =================================
+             TICKETS
+          ================================= */
 
           <TicketList
 
@@ -848,6 +1119,11 @@ function App() {
         ) : activePage ===
           "Contact Admin" ? (
 
+
+          /* =================================
+             CONTACT ADMIN
+          ================================= */
+
           <ContactAdmin
 
             onBack={() =>
@@ -861,6 +1137,11 @@ function App() {
         ) : activePage ===
           "Profile" ? (
 
+
+          /* =================================
+             PROFILE
+          ================================= */
+
           <Profile
 
             onBack={() =>
@@ -873,6 +1154,11 @@ function App() {
 
         ) : activePage ===
           "Settings" ? (
+
+
+          /* =================================
+             SETTINGS
+          ================================= */
 
           <Settings
 
@@ -888,6 +1174,10 @@ function App() {
 
       </main>
 
+
+      {/* =====================================
+          DELETE MODAL
+      ===================================== */}
 
       {deleteTicket && (
 
@@ -912,6 +1202,10 @@ function App() {
       )}
 
 
+      {/* =====================================
+          TOAST
+      ===================================== */}
+
       <Toast
 
         message={toast.message}
@@ -932,5 +1226,6 @@ function App() {
   );
 
 }
+
 
 export default App;
